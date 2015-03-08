@@ -1,0 +1,179 @@
+<%@ page language="java" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<!DOCTYPE HTML > 
+<html>
+<head> 
+<title>机电设备管理</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+<meta http-equiv="description" content="This is my page">
+<link rel="stylesheet" type="text/css" href="jslib/easyui/themes/gray/easyui.css">
+<link rel="stylesheet" type="text/css" href="jslib/easyui/themes/icon.css">
+<link rel="stylesheet" type="text/css" href="jslib/easyui/ext/portal.css">
+<script type="text/javascript" src="jslib/easyui/jquery.min.js"></script>
+<script type="text/javascript" src="jslib/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="jslib/easyui/ext/jquery.portal.js"></script>
+<script type="text/javascript" src="jslib/easyui/ext/jquery.cookie.js"></script>
+<script type="text/javascript" src="jslib/easyui/locale/easyui-lang-zh_CN.js"></script>
+<link type="text/css" rel="stylesheet" href="jslib/ztree/zTreeStyle.css" />
+<link type="text/css" rel="stylesheet" href="jslib/ztree/css.css" />
+<script type="text/javascript" src="jslib/ztree/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="jslib/syUtil.js"></script>
+<!-- ztree --> 
+ 
+
+<script type="text/javascript">
+$(function(){
+	// 修改密码
+	$('#editPwdWindow').window({
+        title: '修改密码',
+        width: 300,
+        modal: true,
+        shadow: true,
+        closed: true,
+        height: 160,
+        resizable:false
+    });
+	
+	$("#btnCancel").click(function () {
+		 $('#editPwdWindow').window('close');
+	});
+	
+	$("#btnEp").click(function(){ 
+		var $newpass = $('#txtNewPass');
+        var $rePass = $('#txtRePass');
+
+        if ($newpass.val() == '') {
+        	$.messager.alert('系统提示', '请输入密码！', 'warning');
+            return false;
+        }
+        if ($rePass.val() == '') {
+        	$.messager.alert('系统提示', '请在一次输入密码！', 'warning');
+            return false;
+        }
+
+        if ($newpass.val() != $rePass.val()) {
+        	$.messager.alert('系统提示', '两次密码不一致！请重新输入', 'warning');
+            return false;
+        }
+
+        $.post('${pageContext.request.contextPath}/userAction!editpassword.action?',{"userPwd": $newpass.val()}, function(data) {
+        	if(data.success){
+	        	$.messager.alert('系统提示', '恭喜，密码修改成功！<br>您的新密码为：' + data.msg, 'info');
+			}else{
+	        	$.messager.alert('系统提示', data.msg, 'info');
+			}
+            $newpass.val('');
+            $rePass.val('');
+            $('#editPwdWindow').window('close');
+        }, "json")// 用json的方式
+	});
+});
+	//修改密码
+	function editPassword() {
+		$('#editPwdWindow').window('open');
+	}
+	
+	function reloadThis(){
+		window.location.reload();
+		window.setTimeout(function(){
+			$.messager.show({
+				title:"消息提示",
+				msg:'欢迎登录，${existUser.username}！ <a href="javascript:void" onclick="top.showAbout();">联系管理员</a>',
+				timeout:5000
+			})
+		},3000);
+	}
+	 
+	// 退出登录
+	function logoutFun() {
+		$.messager.confirm('系统提示','您确定要退出本次登录吗?',function(isConfirm) {
+			if (isConfirm) {
+				location.href = '${pageContext.request.contextPath }/userAction!logout.action';
+			}
+		});
+	}
+	// 版权信息
+	function showAbout(){
+		$.messager.alert("机电设备管理  v1.0","设计: LRB<br/> 管理员邮箱: iceraining@yeah.net <br/> QQ: 406700041");
+	}
+
+	
+</script>
+</head>
+<body class="easyui-layout" style="width: 100%;height: 100%; ">
+	<div data-options="region:'north',split:false" 
+	style="height:70px;padding:10px;background:url('${pageContext.request.contextPath}/common/header_bg1.png') no-repeat left;" >
+		<div style="float: left;padding-top: 10px;">
+			<strong><font color="#EE0000"   size="6">机电管理系统</font>&nbsp;&nbsp;<font color="#EE0000" size="2">v 1.0</font></strong>
+		</div>
+		<div style="float: right; position: absolute; right:15px; top: 45px;">
+		<span id="sessionInfoDiv" style="color: blue;">
+			[<strong style="color: red;"><span id="session_username" >${sessionScope.user.username }</span> </strong>]，欢迎你！您使用[<strong >${pageContext.request.remoteAddr }</strong>]IP登录！
+		</span>
+		<span > 
+			<a href="javascript:void(0);" class="easyui-menubutton"
+				data-options="menu:'#layout_north_kzmbMenu',iconCls:'icon-tip'"><span style="color: blue;">控制面板</span></a>
+		</span>
+		<div id="layout_north_kzmbMenu" style="width: 90px; display: none;">  
+			<div onclick="showAbout();">联系管理员</div>			 
+			<div onclick="editPassword();">修改密码</div>		
+			<div class="menu-sep"></div>	 
+			<div onclick="logoutFun();">退出系统</div>
+		</div> 
+		</div>
+	</div>
+	<div style="height:50px;padding:10px; background:url('${pageContext.request.contextPath}/common/header_bg.png') no-repeat right;"
+		 data-options="region:'south',border:0"  >
+		<table style="width: 100%;">
+			<tbody>
+				<tr>
+					<td style="width: 300px;">
+						<div style="color: #999; font-size: 10pt;">
+							中北大学 | Powered by <a href="#">LRB</a>   
+						</div>
+					</td>   
+					<td style="width: *;" class="co1"><span id="online"
+						style="background: url(${pageContext.request.contextPath }/common/online.png) no-repeat left;padding:18px;font-size:8pt;color:#005590;">在线人数:1</span>
+					</td>
+				</tr>    
+			</tbody>      
+		</table>
+	</div>
+	<div data-options="region:'west'" style="width:250px;">
+		<jsp:include page="west.jsp"></jsp:include>
+	</div>
+<!-- 	<div data-options="region:'east',title:'east',split:true" style="width:200px;"></div> -->
+	<div data-options="region:'center',title:'欢迎使用机电设备管理系统'" style="overflow: hidden;">
+		<jsp:include page="center.jsp"></jsp:include>
+	</div>
+	<c:if test="${empty sessionScope.user }">
+		<jsp:include page="login.jsp"></jsp:include>
+	</c:if>
+	<!--修改密码窗口-->
+    <div id="editPwdWindow" class="easyui-window" title="修改密码" collapsible="false" minimizable="false"
+        maximizable="false" data-options="closed:true" icon="icon-save"  style="width: 300px; height: 150px; padding: 5px;
+        background: #fafafa">
+        <div class="easyui-layout" fit="true">
+            <div region="center" border="false" style="padding: 10px; background: #fff; border: 1px solid #ccc;">
+                <table cellpadding=3>
+                    <tr>
+                        <td>新密码：</td>
+                        <td><input id="txtNewPass" type="password" class="txt01" /></td>
+                    </tr>
+                    <tr>
+                        <td>确认密码：</td>
+                        <td><input id="txtRePass" type="password" class="txt01" /></td>
+                    </tr>
+                </table>
+            </div>
+            <div region="south" border="0" style="text-align: right; height: 30px; ">
+                <a id="btnEp" class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" >确定</a> 
+                <a id="btnCancel" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)">取消</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+package xi.ym.equip.util;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang3.StringUtils;
+
+import xi.ym.equip.pageModel.User;
+ 
+
+public class SessionUtils {
+	/**
+	 * 处理验证码
+	 */
+	public static boolean isCheckNum(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session == null) {
+			return false;
+		}
+		
+		// 获取session中的值
+		String check_number_key = (String) session.getAttribute("CHECK_NUMBER_KEY");
+		if (StringUtils.isBlank(check_number_key)) {
+			return false;
+		}
+
+		// 获取用户输入
+		String saved = (String) request.getParameter("checkNum");
+		if (StringUtils.isBlank(saved)) {
+			return false;
+		}
+
+		// 匹配验证码
+		return check_number_key.equalsIgnoreCase(saved);
+	}
+	
+	/**
+	 * 保存当前用户到当前session中
+	 * */
+	public static void setSysUserToSession(HttpServletRequest request, User user) {
+		if(user == null){
+			return;
+		}
+		request.getSession(false).setAttribute("user", user);
+	}
+
+	/**
+	 * 获取当前用户信息
+	 */
+	public static User getSysUserFromSession(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if(session == null){
+			return  null;
+		}
+		User sysUser = (User)session.getAttribute("user");
+		return sysUser;
+	}
+
+}
